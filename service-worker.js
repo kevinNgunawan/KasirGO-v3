@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   KasirGO — Service Worker v4
+   KasirGO — Service Worker v3
    ═══════════════════════════════════════════════════════ */
 
 const CACHE_VERSION = "kasirgo-v4";
@@ -15,13 +15,7 @@ const STATIC_ASSETS = [
   "./app.js",
   "./icons/favicon.ico",
   "./icons/apple-touch-icon.png",
-  "./icons/icon-72x72.png",
-  "./icons/icon-96x96.png",
-  "./icons/icon-128x128.png",
-  "./icons/icon-144x144.png",
-  "./icons/icon-152x152.png",
   "./icons/icon-192x192.png",
-  "./icons/icon-384x384.png",
   "./icons/icon-512x512.png",
 ];
 
@@ -70,16 +64,6 @@ self.addEventListener("activate", event => {
   );
 });
 
-/* ── MESSAGE (skip waiting / update trigger) ──────────── */
-self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-  if (event.data && event.data.type === "GET_VERSION") {
-    event.ports[0].postMessage({ version: CACHE_VERSION });
-  }
-});
-
 /* ── FETCH ────────────────────────────────────────────── */
 self.addEventListener("fetch", event => {
   const { request } = event;
@@ -92,14 +76,6 @@ self.addEventListener("fetch", event => {
   // Biarkan Google Fonts dihandle browser (streaming)
   if (url.hostname === "fonts.googleapis.com" ||
       url.hostname === "fonts.gstatic.com") return;
-
-  /* Share Target — tangani parameter share dari OS */
-  if (url.pathname.includes("index.html") && url.searchParams.has("title")) {
-    event.respondWith(
-      caches.match("./index.html").then(cached => cached || fetch(request))
-    );
-    return;
-  }
 
   /* Navigasi halaman → Network-first, fallback offline.html */
   if (request.mode === "navigate") {
@@ -148,81 +124,36 @@ self.addEventListener("fetch", event => {
 self.addEventListener("sync", event => {
   if (event.tag === "sync-transaksi") {
     console.log("[KasirGO SW] Background sync: transaksi...");
-    event.waitUntil(doBackgroundSync());
-  }
-  if (event.tag === "sync-hutang") {
-    console.log("[KasirGO SW] Background sync: hutang/piutang...");
     event.waitUntil(Promise.resolve());
   }
 });
 
-async function doBackgroundSync() {
-  try {
-    // Placeholder: kirim data offline yang tertunda
-    const offlineQueue = [];
-    if (offlineQueue.length > 0) {
-      console.log("[KasirGO SW] Mengirim", offlineQueue.length, "transaksi tertunda.");
-    }
-    return Promise.resolve();
-  } catch (err) {
-    console.warn("[KasirGO SW] Background sync gagal:", err);
-    return Promise.reject(err);
-  }
-}
-
 /* ── PERIODIC SYNC ────────────────────────────────────── */
 self.addEventListener("periodicsync", event => {
   if (event.tag === "update-kasirgo") {
-    console.log("[KasirGO SW] Periodic sync: update cache...");
-    event.waitUntil(updateCache());
-  }
-  if (event.tag === "check-stok") {
-    console.log("[KasirGO SW] Periodic sync: cek stok...");
-    event.waitUntil(checkStokNotification());
+    console.log("[KasirGO SW] Periodic sync...");
+    event.waitUntil(Promise.resolve());
   }
 });
-
-async function updateCache() {
-  const cache = await caches.open(CACHE_VERSION);
-  for (const asset of STATIC_ASSETS) {
-    await fetch(asset)
-      .then(res => cache.put(asset, res))
-      .catch(() => console.warn("[SW] Periodic update gagal:", asset));
-  }
-}
-
-async function checkStokNotification() {
-  // Placeholder: cek stok dan kirim notifikasi jika stok rendah
-  return Promise.resolve();
-}
 
 /* ── PUSH NOTIFICATION ────────────────────────────────── */
 self.addEventListener("push", event => {
   const data = event.data?.json() ?? {};
-  const options = {
-    body:     data.body  ?? "Ada notifikasi baru dari KasirGO.",
-    icon:     "./icons/icon-192x192.png",
-    badge:    "./icons/icon-192x192.png",
-    tag:      data.tag ?? "kasirgo-notif",
-    renotify: true,
-    vibrate:  [200, 100, 200],
-    actions: data.actions ?? [
-      { action: "buka", title: "Buka App", icon: "./icons/icon-72x72.png" },
-      { action: "tutup", title: "Tutup" }
-    ],
-    data: { url: data.url ?? self.registration.scope },
-  };
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "KasirGO", options)
+    self.registration.showNotification(data.title ?? "KasirGO", {
+      body:     data.body  ?? "Ada notifikasi baru dari KasirGO.",
+      icon:     "./icons/icon-192x192.png",
+      badge:    "./icons/icon-192x192.png",
+      tag:      "kasirgo-notif",
+      renotify: true,
+      data:     { url: data.url ?? self.registration.scope },
+    })
   );
 });
 
 /* ── NOTIFICATION CLICK ───────────────────────────────── */
 self.addEventListener("notificationclick", event => {
   event.notification.close();
-
-  if (event.action === "tutup") return;
-
   const target = event.notification.data?.url ?? self.registration.scope;
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
@@ -230,9 +161,4 @@ self.addEventListener("notificationclick", event => {
       return win ? win.focus() : clients.openWindow(target);
     })
   );
-});
-
-/* ── NOTIFICATION CLOSE ───────────────────────────────── */
-self.addEventListener("notificationclose", event => {
-  console.log("[KasirGO SW] Notifikasi ditutup:", event.notification.tag);
 });
