@@ -72,7 +72,7 @@
       ]
     },
     {
-      "name": "Hutang/Piutang",
+      "name": "Hutang/Piutang",  
       "short_name": "Hutang",
       "description": "Kelola catatan hutang dan piutang",
       "url": "./index.html",
