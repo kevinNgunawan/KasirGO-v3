@@ -6,32 +6,44 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#4a90e2",
   "theme_color": "#4a90e2",
-  "orientation": "portrait",
-  "lang": "id",
+  "orientation": "portrait-primary",
+  "dir": "ltr",
+  "lang": "id-ID",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
       "src": "icons/screenshot1.png",
       "sizes": "1080x1920",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tampilan Utama Kasir"
     },
     {
       "src": "icons/screenshot2.png",
       "sizes": "1080x1920",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tampilan Laporan Keuangan"
     }
   ],
   "shortcuts": [
@@ -43,7 +55,8 @@
       "icons": [
         {
           "src": "icons/icon-192x192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "purpose": "any"
         }
       ]
     },
@@ -55,7 +68,8 @@
       "icons": [
         {
           "src": "icons/icon-192x192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "purpose": "any"
         }
       ]
     },
@@ -67,19 +81,21 @@
       "icons": [
         {
           "src": "icons/icon-192x192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "purpose": "any"
         }
       ]
     },
     {
-      "name": "Hutang/Piutang",  
+      "name": "Hutang/Piutang",
       "short_name": "Hutang",
       "description": "Kelola catatan hutang dan piutang",
       "url": "./index.html",
       "icons": [
         {
           "src": "icons/icon-192x192.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "purpose": "any"
         }
       ]
     }
@@ -88,5 +104,42 @@
     "business",
     "finance",
     "productivity"
-  ]
+  ],
+  "iarc_rating_id": "",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "share_target": {
+    "action": "./index.html",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "accept": {
+        "text/csv": [
+          ".csv"
+        ]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+kasirgo",
+      "url": "./index.html?action=%s"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "note_taking": {
+    "new_note_url": "./index.html"
+  }
 }
